@@ -10,6 +10,14 @@ pub struct BootInfo {
     pub memory_map: ArrayVec<[MemoryRegion; 32]>,
 }
 
+impl BootInfo {
+    pub fn new() -> Self {
+        BootInfo {
+            memory_map: ArrayVec::new(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct MemoryRegion {
     pub start_addr: PhysAddr,
