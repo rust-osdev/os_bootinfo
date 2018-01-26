@@ -6,6 +6,7 @@ extern crate arrayvec;
 use x86_64::PhysAddr;
 use arrayvec::ArrayVec;
 
+#[derive(Debug, Clone)]
 pub struct BootInfo {
     pub memory_map: ArrayVec<[MemoryRegion; 32]>,
 }
@@ -41,6 +42,7 @@ pub enum MemoryRegionType {
     BadMemory,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(C)]
 pub struct E820MemoryRegion {
     pub start_addr: u64,
