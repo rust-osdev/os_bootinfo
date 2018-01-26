@@ -68,17 +68,3 @@ impl From<E820MemoryRegion> for MemoryRegion {
         }
     }
 }
-
-#[repr(u32)]
-pub enum E820MemoryRegionType {
-    /// (normal) RAM
-    Usable = 1,
-    /// unusable
-    Reserved = 2,
-    /// ACPI reclaimable memory
-    AcpiReclaimable = 3,
-    /// ACPI NVS memory
-    AcpiNvs = 4,
-    /// Area containing bad memory
-    BadMemory = 5,
-}
