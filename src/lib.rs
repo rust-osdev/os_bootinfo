@@ -17,6 +17,10 @@ impl BootInfo {
             memory_map: ArrayVec::new(),
         }
     }
+
+    pub fn sort_memory_map(&mut self) {
+        self.memory_map.sort_unstable_by_key(|r| r.start_addr);
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
