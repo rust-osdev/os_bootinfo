@@ -1,24 +1,66 @@
 #![no_std]
 
 extern crate x86_64;
+extern crate arrayvec;
 
 use x86_64::PhysAddr;
+use arrayvec::ArrayVec;
 
-#[repr(C)]
 pub struct BootInfo {
-    pub memory_map: &'static mut [E820MemoryRegion],
+    pub memory_map: ArrayVec<[MemoryRegion; 32]>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct MemoryRegion {
+    pub start_addr: PhysAddr,
+    pub len: u64,
+    pub region_type: MemoryRegionType
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MemoryRegionType {
+    /// free RAM
+    Usable,
+    /// used RAM
+    InUse,
+    /// unusable
+    Reserved,
+    /// ACPI reclaimable memory
+    AcpiReclaimable,
+    /// ACPI NVS memory
+    AcpiNvs,
+    /// Area containing bad memory
+    BadMemory,
 }
 
 #[repr(C)]
 pub struct E820MemoryRegion {
-    pub start_addr: PhysAddr,
-    pub length: u64,
-    pub region_type: MemoryRegionType,
+    pub start_addr: u64,
+    pub len: u64,
+    pub region_type: u32,
     pub acpi_extended_attributes: u32,
 }
 
+impl From<E820MemoryRegion> for MemoryRegion {
+    fn from(region: E820MemoryRegion) -> MemoryRegion {
+        let region_type = match region.region_type {
+            1 => MemoryRegionType::Usable,
+            2 => MemoryRegionType::Reserved,
+            3 => MemoryRegionType::AcpiReclaimable,
+            4 => MemoryRegionType::AcpiNvs,
+            5 => MemoryRegionType::BadMemory,
+            t => panic!("invalid region type {}", t),
+        };
+        MemoryRegion {
+            start_addr: PhysAddr::new(region.start_addr),
+            len: region.len,
+            region_type
+        }
+    }
+}
+
 #[repr(u32)]
-pub enum MemoryRegionType {
+pub enum E820MemoryRegionType {
     /// (normal) RAM
     Usable = 1,
     /// unusable
@@ -29,6 +71,4 @@ pub enum MemoryRegionType {
     AcpiNvs = 4,
     /// Area containing bad memory
     BadMemory = 5,
-    /// used by bootloader (e.g. to create page tables)
-    InUse = 0xb007,
 }

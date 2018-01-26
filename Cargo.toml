@@ -1,9 +1,13 @@
 [package]
 authors = ["Philipp Oppermann <dev@phil-opp.com>"]
-name = "os_bootinfo"
-version = "0.1.0"
 description = "Boot information that can be passed from a bootloader to an OS kernel."
 license = "MIT/Apache-2.0"
+name = "os_bootinfo"
+version = "0.2.0-alpha-001"
 
 [dependencies]
 x86_64 = "0.2.0-alpha"
+
+[dependencies.arrayvec]
+version = "0.4.7"
+default-features = false
