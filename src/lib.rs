@@ -4,17 +4,22 @@ extern crate x86_64;
 extern crate arrayvec;
 
 use x86_64::PhysAddr;
+use x86_64::structures::paging::PageTable;
 use arrayvec::ArrayVec;
 
-#[derive(Debug, Clone)]
+pub type MemoryMap = ArrayVec<[MemoryRegion; 32]>;
+
+#[derive(Debug)]
 pub struct BootInfo {
-    pub memory_map: ArrayVec<[MemoryRegion; 32]>,
+    pub memory_map: MemoryMap,
+    pub p4_table: &'static mut PageTable,
 }
 
 impl BootInfo {
-    pub fn new() -> Self {
+    pub fn new(p4_table: &'static mut PageTable) -> Self {
         BootInfo {
             memory_map: ArrayVec::new(),
+            p4_table
         }
     }
 
