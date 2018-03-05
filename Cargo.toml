@@ -7,7 +7,3 @@ version = "0.2.0-alpha-005"
 
 [dependencies]
 x86_64 = "0.2.0-alpha"
-
-[dependencies.arrayvec]
-version = "0.4.7"
-default-features = false
