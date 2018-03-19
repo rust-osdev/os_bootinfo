@@ -77,6 +77,12 @@ pub enum MemoryRegionType {
     AcpiNvs,
     /// Area containing bad memory
     BadMemory,
+    /// kernel memory
+    Kernel,
+    /// memory used by page tables
+    PageTable,
+    /// memory used by the bootloader
+    Bootloader,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
