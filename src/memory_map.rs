@@ -52,6 +52,14 @@ impl MemoryRegion {
             region_type: MemoryRegionType::Reserved,
         }
     }
+
+    pub fn start_addr(&self) -> PhysAddr {
+        self.start_addr
+    }
+
+    pub fn end_addr(&self) -> PhysAddr {
+        self.start_addr + self.len
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
