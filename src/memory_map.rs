@@ -83,6 +83,10 @@ pub enum MemoryRegionType {
     PageTable,
     /// memory used by the bootloader
     Bootloader,
+    /// frame at address zero
+    ///
+    /// (shouldn't be used because it's easy to make mistakes related to null pointers)
+    FrameZero,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
