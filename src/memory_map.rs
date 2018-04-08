@@ -5,20 +5,43 @@ use x86_64::PhysAddr;
 #[repr(C)]
 pub struct MemoryMap {
     entries: [MemoryRegion; 32],
-    last_used_entry: u64,
+    // u64 instead of usize so that the structure layout is platform
+    // independent
+    next_entry_index: u64,
 }
 
 impl MemoryMap {
     pub fn new() -> Self {
         MemoryMap {
             entries: [MemoryRegion::empty(); 32],
-            last_used_entry: 0,
+            next_entry_index: 0,
         }
     }
 
     pub fn add_region(&mut self, region: MemoryRegion) {
-        self.entries[self.last_used_entry as usize] = region;
-        self.last_used_entry += 1;
+        self.entries[self.next_entry_index()] = region;
+        self.next_entry_index += 1;
+    }
+
+    pub fn sort(&mut self) {
+        use core::cmp::Ordering;
+
+        self.entries.sort_unstable_by(|r1, r2|
+            if r1.len == 0 {
+                Ordering::Greater
+            } else if r2.len == 0 {
+                Ordering::Less
+            } else {
+                r1.start_addr.cmp(&r2.start_addr)
+            }
+        );
+        if let Some(first_zero_index) = self.entries.iter().position(|r| r.len == 0) {
+            self.next_entry_index = first_zero_index as u64;
+        }
+    }
+
+    fn next_entry_index(&self) -> usize {
+        self.next_entry_index as usize
     }
 }
 

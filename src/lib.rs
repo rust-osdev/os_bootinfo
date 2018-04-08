@@ -31,10 +31,6 @@ impl BootInfo {
     pub fn check_version(&self) -> Result<(), ()> {
         if self.version == VERSION { Ok(()) } else { Err(()) }
     }
-
-    pub fn sort_memory_map(&mut self) {
-        self.memory_map.sort_unstable_by_key(|r| r.start_addr);
-    }
 }
 
 extern "C" {
