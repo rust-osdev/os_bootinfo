@@ -7,7 +7,7 @@ pub use memory_map::*;
 
 use x86_64::structures::paging::PageTable;
 
-const VERSION: u64 = 1;
+const VERSION: u64 = 2;
 
 mod memory_map;
 
