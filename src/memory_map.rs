@@ -49,13 +49,14 @@ impl Deref for MemoryMap {
     type Target = [MemoryRegion];
 
     fn deref(&self) -> &Self::Target {
-        &self.entries
+        &self.entries[0..self.next_entry_index()]
     }
 }
 
 impl DerefMut for MemoryMap {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.entries
+        let next_index = self.next_entry_index();
+        &mut self.entries[0..next_index]
     }
 }
 
