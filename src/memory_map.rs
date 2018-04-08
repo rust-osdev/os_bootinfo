@@ -1,7 +1,7 @@
 use core::ops::{Deref, DerefMut};
+use core::fmt::{self, Debug};
 use x86_64::PhysAddr;
 
-#[derive(Debug)]
 #[repr(C)]
 pub struct MemoryMap {
     entries: [MemoryRegion; 32],
@@ -57,6 +57,12 @@ impl DerefMut for MemoryMap {
     fn deref_mut(&mut self) -> &mut Self::Target {
         let next_index = self.next_entry_index();
         &mut self.entries[0..next_index]
+    }
+}
+
+impl Debug for MemoryMap {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_list().entries(self.iter()).finish()
     }
 }
 
