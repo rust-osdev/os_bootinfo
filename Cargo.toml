@@ -3,7 +3,7 @@ authors = ["Philipp Oppermann <dev@phil-opp.com>"]
 description = "Boot information that can be passed from a bootloader to an OS kernel."
 license = "MIT/Apache-2.0"
 name = "os_bootinfo"
-version = "0.2.0-alpha-010"
+version = "0.2.0-alpha-011"
 
 [dependencies]
 x86_64 = "0.2.0-alpha"
