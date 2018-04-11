@@ -1,6 +1,7 @@
 use core::ops::{Deref, DerefMut};
 use core::fmt::{self, Debug};
 use x86_64::PhysAddr;
+use x86_64::structures::paging::{PhysFrame, PhysFrameRange};
 
 #[repr(C)]
 pub struct MemoryMap {
@@ -21,21 +22,24 @@ impl MemoryMap {
     pub fn add_region(&mut self, region: MemoryRegion) {
         self.entries[self.next_entry_index()] = region;
         self.next_entry_index += 1;
+        self.sort();
     }
 
     pub fn sort(&mut self) {
         use core::cmp::Ordering;
 
         self.entries.sort_unstable_by(|r1, r2|
-            if r1.len == 0 {
+            if r1.range.is_empty() {
                 Ordering::Greater
-            } else if r2.len == 0 {
+            } else if r2.range.is_empty() {
                 Ordering::Less
             } else {
-                r1.start_addr.cmp(&r2.start_addr)
+                r1.range.start.cmp(&r2.range.start)
             }
         );
-        if let Some(first_zero_index) = self.entries.iter().position(|r| r.len == 0) {
+        if let Some(first_zero_index) = self.entries.iter()
+            .position(|r| r.range.is_empty())
+        {
             self.next_entry_index = first_zero_index as u64;
         }
     }
@@ -69,26 +73,17 @@ impl Debug for MemoryMap {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(C)]
 pub struct MemoryRegion {
-    pub start_addr: PhysAddr,
-    pub len: u64,
+    pub range: PhysFrameRange,
     pub region_type: MemoryRegionType
 }
 
 impl MemoryRegion {
     pub fn empty() -> Self {
+        let zero = PhysFrame::containing_address(PhysAddr::new(0));
         MemoryRegion {
-            start_addr: PhysAddr::new(0),
-            len: 0,
-            region_type: MemoryRegionType::Reserved,
+            range: PhysFrame::range(zero, zero),
+            region_type: MemoryRegionType::Empty,
         }
-    }
-
-    pub fn start_addr(&self) -> PhysAddr {
-        self.start_addr
-    }
-
-    pub fn end_addr(&self) -> PhysAddr {
-        self.start_addr + self.len
     }
 }
 
@@ -109,6 +104,8 @@ pub enum MemoryRegionType {
     BadMemory,
     /// kernel memory
     Kernel,
+    /// kernel stack memory
+    KernelStack,
     /// memory used by page tables
     PageTable,
     /// memory used by the bootloader
@@ -117,6 +114,10 @@ pub enum MemoryRegionType {
     ///
     /// (shouldn't be used because it's easy to make mistakes related to null pointers)
     FrameZero,
+    /// an empty region with size 0
+    Empty,
+    /// used for storing the boot information
+    BootInfo,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -138,9 +139,12 @@ impl From<E820MemoryRegion> for MemoryRegion {
             5 => MemoryRegionType::BadMemory,
             t => panic!("invalid region type {}", t),
         };
+        let start_addr = PhysAddr::new(region.start_addr);
+        let start_frame = PhysFrame::containing_address(start_addr);
+        let end_addr = (start_addr + region.len).align_up(start_frame.size());
+        let end_frame = PhysFrame::containing_address(end_addr);
         MemoryRegion {
-            start_addr: PhysAddr::new(region.start_addr),
-            len: region.len,
+            range: PhysFrame::range(start_frame, end_frame),
             region_type
         }
     }
