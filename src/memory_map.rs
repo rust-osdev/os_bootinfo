@@ -98,6 +98,17 @@ pub struct FrameRange {
 }
 
 impl FrameRange {
+    /// Create a new FrameRange from the passed start_addr and end_addr.
+    ///
+    /// The end_addr is exclusive.
+    pub fn new(start_addr: u64, end_addr: u64) -> Self {
+        let last_byte = end_addr - 1;
+        FrameRange {
+            start_frame_number: start_addr / PAGE_SIZE,
+            end_frame_number: (last_byte / PAGE_SIZE) + 1,
+        }
+    }
+
     pub fn is_empty(&self) -> bool {
         self.start_frame_number == self.end_frame_number
     }
@@ -174,14 +185,8 @@ impl From<E820MemoryRegion> for MemoryRegion {
             5 => MemoryRegionType::BadMemory,
             t => panic!("invalid region type {}", t),
         };
-        let start_frame_number = region.start_addr / PAGE_SIZE;
-        let last_byte = region.start_addr + region.len - 1;
-        let end_frame_number = (last_byte / PAGE_SIZE) + 1;
         MemoryRegion {
-            range: FrameRange {
-                start_frame_number,
-                end_frame_number,
-            },
+            range: FrameRange::new(region.start_addr, region.start_addr + region.len),
             region_type,
         }
     }
