@@ -1,7 +1,7 @@
 use core::ops::{Deref, DerefMut};
-use core::fmt::{self, Debug};
-use x86_64::PhysAddr;
-use x86_64::structures::paging::{PhysFrame, PhysFrameRange};
+use core::fmt;
+
+const PAGE_SIZE: u64 = 4096;
 
 #[repr(C)]
 pub struct MemoryMap {
@@ -34,7 +34,7 @@ impl MemoryMap {
             } else if r2.range.is_empty() {
                 Ordering::Less
             } else {
-                r1.range.start.cmp(&r2.range.start)
+                r1.range.start_frame_number.cmp(&r2.range.start_frame_number)
             }
         );
         if let Some(first_zero_index) = self.entries.iter()
@@ -64,7 +64,7 @@ impl DerefMut for MemoryMap {
     }
 }
 
-impl Debug for MemoryMap {
+impl fmt::Debug for MemoryMap {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_list().entries(self.iter()).finish()
     }
@@ -73,17 +73,41 @@ impl Debug for MemoryMap {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(C)]
 pub struct MemoryRegion {
-    pub range: PhysFrameRange,
+    pub range: FrameRange,
     pub region_type: MemoryRegionType
 }
 
 impl MemoryRegion {
     pub fn empty() -> Self {
-        let zero = PhysFrame::containing_address(PhysAddr::new(0));
         MemoryRegion {
-            range: PhysFrame::range(zero, zero),
+            range: FrameRange {
+                start_frame_number: 0,
+                end_frame_number: 0,
+            },
             region_type: MemoryRegionType::Empty,
         }
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[repr(C)]
+pub struct FrameRange {
+    pub start_frame_number: u64,
+    // exclusive
+    pub end_frame_number: u64,
+}
+
+impl FrameRange {
+    pub fn is_empty(&self) -> bool {
+        self.start_frame_number == self.end_frame_number
+    }
+}
+
+impl fmt::Debug for FrameRange {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let start_addr = self.start_frame_number * PAGE_SIZE;
+        let end_addr = self.end_frame_number * PAGE_SIZE;
+        write!(f, "FrameRange({:#x}..{:#x})", start_addr, end_addr)
     }
 }
 
@@ -139,13 +163,15 @@ impl From<E820MemoryRegion> for MemoryRegion {
             5 => MemoryRegionType::BadMemory,
             t => panic!("invalid region type {}", t),
         };
-        let start_addr = PhysAddr::new(region.start_addr);
-        let start_frame = PhysFrame::containing_address(start_addr);
-        let end_addr = (start_addr + region.len).align_up(start_frame.size());
-        let end_frame = PhysFrame::containing_address(end_addr);
+        let start_frame_number = region.start_addr / PAGE_SIZE;
+        let last_byte = region.start_addr + region.len - 1;
+        let end_frame_number = (last_byte / PAGE_SIZE) + 1;
         MemoryRegion {
-            range: PhysFrame::range(start_frame, end_frame),
-            region_type
+            range: FrameRange {
+                start_frame_number,
+                end_frame_number,
+            },
+            region_type,
         }
     }
 }
