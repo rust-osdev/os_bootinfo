@@ -4,6 +4,3 @@ description = "Boot information that can be passed from a bootloader to an OS ke
 license = "MIT/Apache-2.0"
 name = "os_bootinfo"
 version = "0.2.0-alpha-011"
-
-[dependencies]
-x86_64 = "0.2.0-alpha"
