@@ -101,13 +101,24 @@ impl FrameRange {
     pub fn is_empty(&self) -> bool {
         self.start_frame_number == self.end_frame_number
     }
+
+    pub fn start_addr(&self) -> u64 {
+        self.start_frame_number * PAGE_SIZE
+    }
+
+    pub fn end_addr(&self) -> u64 {
+        self.end_frame_number * PAGE_SIZE
+    }
 }
 
 impl fmt::Debug for FrameRange {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let start_addr = self.start_frame_number * PAGE_SIZE;
-        let end_addr = self.end_frame_number * PAGE_SIZE;
-        write!(f, "FrameRange({:#x}..{:#x})", start_addr, end_addr)
+        write!(
+            f,
+            "FrameRange({:#x}..{:#x})",
+            self.start_addr(),
+            self.end_addr()
+        )
     }
 }
 
