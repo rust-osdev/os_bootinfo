@@ -1,5 +1,5 @@
-use core::ops::{Deref, DerefMut};
 use core::fmt;
+use core::ops::{Deref, DerefMut};
 
 const PAGE_SIZE: u64 = 4096;
 
@@ -28,18 +28,18 @@ impl MemoryMap {
     pub fn sort(&mut self) {
         use core::cmp::Ordering;
 
-        self.entries.sort_unstable_by(|r1, r2|
+        self.entries.sort_unstable_by(|r1, r2| {
             if r1.range.is_empty() {
                 Ordering::Greater
             } else if r2.range.is_empty() {
                 Ordering::Less
             } else {
-                r1.range.start_frame_number.cmp(&r2.range.start_frame_number)
+                r1.range
+                    .start_frame_number
+                    .cmp(&r2.range.start_frame_number)
             }
-        );
-        if let Some(first_zero_index) = self.entries.iter()
-            .position(|r| r.range.is_empty())
-        {
+        });
+        if let Some(first_zero_index) = self.entries.iter().position(|r| r.range.is_empty()) {
             self.next_entry_index = first_zero_index as u64;
         }
     }
@@ -74,7 +74,7 @@ impl fmt::Debug for MemoryMap {
 #[repr(C)]
 pub struct MemoryRegion {
     pub range: FrameRange,
-    pub region_type: MemoryRegionType
+    pub region_type: MemoryRegionType,
 }
 
 impl MemoryRegion {

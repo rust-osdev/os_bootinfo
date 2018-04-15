@@ -20,12 +20,16 @@ impl BootInfo {
         BootInfo {
             version: VERSION,
             p4_table_addr,
-            memory_map
+            memory_map,
         }
     }
 
     pub fn check_version(&self) -> Result<(), ()> {
-        if self.version == VERSION { Ok(()) } else { Err(()) }
+        if self.version == VERSION {
+            Ok(())
+        } else {
+            Err(())
+        }
     }
 }
 
