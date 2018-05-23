@@ -9,6 +9,8 @@ pub struct MemoryMap {
     // u64 instead of usize so that the structure layout is platform
     // independent
     next_entry_index: u64,
+    // iterator index
+    current_index: u64,
 }
 
 impl MemoryMap {
@@ -16,6 +18,7 @@ impl MemoryMap {
         MemoryMap {
             entries: [MemoryRegion::empty(); 32],
             next_entry_index: 0,
+            current_index: 0,
         }
     }
 
@@ -56,6 +59,10 @@ impl MemoryMap {
     fn next_entry_index(&self) -> usize {
         self.next_entry_index as usize
     }
+
+    pub fn reset_iter(&mut self) {
+        self.current_index = 0;
+    }
 }
 
 impl Deref for MemoryMap {
@@ -70,6 +77,20 @@ impl DerefMut for MemoryMap {
     fn deref_mut(&mut self) -> &mut Self::Target {
         let next_index = self.next_entry_index();
         &mut self.entries[0..next_index]
+    }
+}
+
+impl Iterator for MemoryMap {
+    type Item = MemoryRegion;
+
+    fn next(&mut self) -> Option<MemoryRegion> {
+        if self.current_index == 31 {
+            self.current_index = 0;
+            None
+        } else {
+            self.current_index += 1;
+            Some(self.entries[self.current_index-1])
+        }
     }
 }
 
