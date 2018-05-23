@@ -89,7 +89,7 @@ impl Iterator for MemoryMap {
             None
         } else {
             self.current_index += 1;
-            Some(self.entries[self.current_index-1])
+            Some(self.entries[(self.current_index-1) as usize])
         }
     }
 }
