@@ -84,7 +84,7 @@ impl Iterator for MemoryMap {
     type Item = MemoryRegion;
 
     fn next(&mut self) -> Option<MemoryRegion> {
-        if self.current_index == 31 {
+        if self.current_index == 32 {
             self.current_index = 0;
             None
         } else {
