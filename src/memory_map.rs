@@ -173,6 +173,8 @@ pub enum MemoryRegionType {
     Empty,
     /// used for storing the boot information
     BootInfo,
+    /// used for storing the supplied package
+    Package,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
